@@ -1,7 +1,5 @@
 package anandgames.gravity.entities;
 
-import java.awt.Point;
-
 import anandgames.gravity.Board;
 
 import com.badlogic.gdx.math.Vector2;

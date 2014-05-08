@@ -1,9 +1,9 @@
 package anandgames.gravity.entities;
 
-import java.awt.Point;
 import java.util.ArrayList;
 
 import anandgames.gravity.Board;
+import anandgames.gravity.entities.pickups.Weapon;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -15,7 +15,7 @@ public class PlayerShip extends Entity {
 	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 	private boolean upPressed, rightPressed, leftPressed, downPressed,
 			mouseHeld, shielded;
-	private int score, currentAmmo;
+	private int score, currentAmmo, money;
 	private Sound fire;
 	private Weapon weapon;
 	private double oldOrientation;
@@ -229,6 +229,18 @@ public class PlayerShip extends Entity {
 
 	public void setShielded(boolean s) {
 		shielded = s;
+	}
+
+	public int getMoney() {
+		return money;
+	}
+
+	public void setMoney(int money) {
+		this.money = money;
+	}
+	
+	public void addMoney(int money) {
+		this.money += money;
 	}
 	
 

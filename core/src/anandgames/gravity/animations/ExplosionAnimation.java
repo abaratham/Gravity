@@ -35,7 +35,7 @@ public class ExplosionAnimation {
 	public void drawCurrentFrame(SpriteBatch batch, float stateTime) {
 		currentFrame = animation.getKeyFrame(stateTime, true);
 		batch.draw(currentFrame, x, y,
-				4f, 4f, 8f, 8f, 1, 1, 0);			
+				16f, 16f, 32f, 32f, 1, 1, 0);			
 	}
 	
 	public Animation getAnimation() {

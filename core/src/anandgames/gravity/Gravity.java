@@ -8,7 +8,7 @@ public class Gravity extends Game {
 	public static final int DESKTOP = 0;
 	public static final int ANDROID = 1;
 	public static final int HTML = 2;
-	public static final String VERSION_NUMBER = "v0.7.5";
+	public static final String VERSION_NUMBER = "v0.8.0";
 	
 	private int platform;
 

@@ -6,11 +6,12 @@ import java.util.Random;
 import anandgames.gravity.entities.Asteroid;
 import anandgames.gravity.entities.Bullet;
 import anandgames.gravity.entities.Enemy;
-import anandgames.gravity.entities.FlameThrower;
 import anandgames.gravity.entities.PlayerShip;
-import anandgames.gravity.entities.Rifle;
-import anandgames.gravity.entities.Shotgun;
-import anandgames.gravity.entities.Weapon;
+import anandgames.gravity.entities.pickups.FlameThrower;
+import anandgames.gravity.entities.pickups.Money;
+import anandgames.gravity.entities.pickups.Rifle;
+import anandgames.gravity.entities.pickups.Shotgun;
+import anandgames.gravity.entities.pickups.Weapon;
 import anandgames.gravity.screens.GameScreen;
 import anandgames.gravity.tweens.ShotgunTweenAccessor;
 import aurelienribon.tweenengine.Tween;
@@ -33,6 +34,7 @@ public class Board {
 	private ArrayList<Asteroid> asteroids;
 	private TweenManager tManager;
 	private Vector2 fireLoc;
+	private ArrayList<Money> moneyList;
 
 	// TESTING TOOLS, DELETE WHEN DONE
 	public boolean collisions = true;
@@ -45,8 +47,7 @@ public class Board {
 		initTweenManager();
 		initPlanets();
 		asteroids = new ArrayList<Asteroid>();
-		// for testing
-		// spawnWeapon();
+		moneyList = new ArrayList<Money>();
 	}
 
 	// Set up the Tween Manager
@@ -241,7 +242,16 @@ public class Board {
 				game.showMessage("Picked up " + w.getName());
 				break;
 			}
-
+		}
+		
+		//Check player-money collisions
+		for (int i = 0; i < moneyList.size(); i++) {
+			Money m = moneyList.get(i);
+			if (ship.collidesWith(m)) {
+				ship.addMoney(m.getValue());
+				moneyList.remove(m);
+				game.showMessage("Picked up $" + m.getValue());
+			}
 		}
 
 		for (int i = 0; i < enemies.size(); i++) {
@@ -267,6 +277,8 @@ public class Board {
 					bullets.remove(j);
 					ship.setScore(ship.getScore() + 10);
 					enemies.remove(i);
+					int val = new Random().nextInt(100);
+					moneyList.add(new Money(e.getPosition(), val, this));
 					if (enemies.size() == 0)
 						return;
 				}
@@ -370,5 +382,9 @@ public class Board {
 
 	public void setFireLoc(Vector2 fireLoc) {
 		this.fireLoc = fireLoc;
+	}
+	
+	public ArrayList<Money> getMoneyList() {
+		return moneyList;
 	}
 }

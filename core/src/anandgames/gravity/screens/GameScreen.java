@@ -1,6 +1,8 @@
 package anandgames.gravity.screens;
 
+import java.util.AbstractQueue;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import anandgames.gravity.Board;
 import anandgames.gravity.Gravity;
@@ -8,7 +10,8 @@ import anandgames.gravity.animations.ExplosionAnimation;
 import anandgames.gravity.entities.Asteroid;
 import anandgames.gravity.entities.Enemy;
 import anandgames.gravity.entities.PlayerShip;
-import anandgames.gravity.entities.Weapon;
+import anandgames.gravity.entities.pickups.Money;
+import anandgames.gravity.entities.pickups.Weapon;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -52,6 +55,7 @@ public class GameScreen implements Screen {
 	private long backgroundID;
 	private String message;
 	private AssetManager manager;
+	private LinkedList<String> messageQueue;
 
 	public GameScreen(AssetManager manager) {
 		super();
@@ -99,6 +103,7 @@ public class GameScreen implements Screen {
 		cam.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		background = manager.get("GravityData/Sounds/loop1.mp3");
 		// backgroundID = background.loop();
+		messageQueue = new LinkedList<String>();
 	}
 
 	// Initialize the ship's flame animation
@@ -146,8 +151,11 @@ public class GameScreen implements Screen {
 			drawWeapons();
 			drawAsteroids();
 			drawInfo();
-			if (message != null)
+			drawMoney();
+			if (message != null) {
 				drawMessage(delta);
+				System.out.println(message);
+			}
 
 			spriteBatch.end();
 		} else {
@@ -155,6 +163,16 @@ public class GameScreen implements Screen {
 			((Game) (Gdx.app.getApplicationListener()))
 					.setScreen(new GameOverScreen(ship.getScore()));
 
+		}
+	}
+
+	public void drawMoney() {
+		for (Money m : board.getMoneyList()) {
+			spriteBatch
+					.draw(sprites[(int) m.getSpriteKey().x][(int) m
+							.getSpriteKey().y], (float) m.getPosition().x,
+							(float) m.getPosition().y, 16f, 16f, 32f, 32f, 1f,
+							1f, (float) m.getOrientation());
 		}
 	}
 
@@ -175,16 +193,21 @@ public class GameScreen implements Screen {
 				- (10 * (message.length() / 2));
 		messageFont.draw(spriteBatch, message, mx, my);
 		System.out.println(mCounter);
+		// Current message is done showing
 		if (mCounter >= (int) (3 / delta)) {
-			message = null;
+			if (!messageQueue.isEmpty())
+				message = messageQueue.poll();
+			else
+				message = null;
 			mCounter = 0;
 		}
 	}
 
 	public void showMessage(String message) {
-		this.message = message;
-		// Tween.to(messageFont, 0, 3f).target(.99f).start(tManager);
-		// message = null;
+		if (this.message != null)
+			messageQueue.add(message);
+		else
+			this.message = message;
 	}
 
 	public void drawWeapons() {
@@ -212,6 +235,8 @@ public class GameScreen implements Screen {
 		font.draw(spriteBatch, "Special Ammo:"
 				+ board.getShip().getCurrentAmmo(), ship.getPosition().x + 400,
 				ship.getPosition().y + 310);
+		font.draw(spriteBatch, "Money:" + board.getShip().getMoney(),
+				ship.getPosition().x + 400, ship.getPosition().y + 260);
 	}
 
 	public void drawShip() {
@@ -356,8 +381,7 @@ public class GameScreen implements Screen {
 				} else {
 					board.setFireLoc(new Vector2(screenX, screenY));
 				}
-			}
-			else {
+			} else {
 				ship.reOrient(new Vector2(screenX, screenY));
 			}
 			// touchHeld = true;

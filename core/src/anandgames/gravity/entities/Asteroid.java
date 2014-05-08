@@ -1,7 +1,5 @@
 package anandgames.gravity.entities;
 
-import java.awt.Point;
-
 import anandgames.gravity.Board;
 
 import com.badlogic.gdx.math.Vector2;
@@ -26,11 +24,13 @@ public class Asteroid extends Entity {
 		setAcceleration(new Vector2(0, 0));
 		setRadius(60);
 	}
-	
+
 	public void move() {
 		super.move();
 		Vector2 pos = getPosition();
-		if (pos.x > getBoard().getWidth() || pos.x < 0 || pos.y > getBoard().getHeight() || pos.y < 0)
+		//Remove the asteroid once it is outside the bounds of the board
+		if (pos.x > getBoard().getWidth() || pos.x < 0
+				|| pos.y > getBoard().getHeight() || pos.y < 0)
 			getBoard().getAsteroids().remove(this);
 	}
 

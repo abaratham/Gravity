@@ -1,6 +1,6 @@
 package anandgames.gravity.tweens;
 
-import anandgames.gravity.entities.Weapon;
+import anandgames.gravity.entities.pickups.Weapon;
 import aurelienribon.tweenengine.TweenAccessor;
 
 public class ShotgunTweenAccessor implements TweenAccessor<Weapon> {
