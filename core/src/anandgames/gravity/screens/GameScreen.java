@@ -1,6 +1,5 @@
 package anandgames.gravity.screens;
 
-import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -11,11 +10,12 @@ import anandgames.gravity.entities.Asteroid;
 import anandgames.gravity.entities.Enemy;
 import anandgames.gravity.entities.PlayerShip;
 import anandgames.gravity.entities.pickups.Money;
-import anandgames.gravity.entities.pickups.Weapon;
+import anandgames.gravity.entities.pickups.WeaponPickup;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
@@ -134,7 +134,10 @@ public class GameScreen implements Screen {
 			gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			gl.glActiveTexture(GL20.GL_TEXTURE0);
 			gl.glEnable(GL20.GL_TEXTURE_2D);
-			Gdx.input.setInputProcessor(new MyInputProcessor());
+			if (((Gravity) Gdx.app.getApplicationListener()).getPlatform() == Gravity.DESKTOP)
+				Gdx.input.setInputProcessor(new DesktopInputProcessor(this));
+			else if (((Gravity) Gdx.app.getApplicationListener()).getPlatform() == Gravity.ANDROID)
+				Gdx.input.setInputProcessor(new MobileInputProcessor(this));
 			PlayerShip ship = board.getShip();
 			cam.position.set(ship.getPosition().x, ship.getPosition().y, 0);
 			cam.update();
@@ -211,12 +214,12 @@ public class GameScreen implements Screen {
 	}
 
 	public void drawWeapons() {
-		for (Weapon x : board.getWeaponList()) {
+		for (WeaponPickup x : board.getWeaponList()) {
 			spriteBatch
 					.draw(sprites[(int) x.getSpriteKey().x][(int) x
-							.getSpriteKey().y], (float) x.getX(), (float) x
-							.getY(), 16f, 16f, 32f, 32f, 1f, 1f, (float) x
-							.getOrientation());
+							.getSpriteKey().y], (float) x.getPosition().x,
+							(float) x.getPosition().y, 16f, 16f, 32f, 32f, 1f,
+							1f, (float) x.getOrientation());
 		}
 	}
 
@@ -302,35 +305,114 @@ public class GameScreen implements Screen {
 
 	}
 
-	private class MyInputProcessor implements InputProcessor {
+	public Board getBoard() {
+		return board;
+	}
 
-		private final PlayerShip ship = board.getShip();
+	private class MobileInputProcessor implements InputProcessor {
+
+		private GameScreen screen;
+
+		public MobileInputProcessor(GameScreen res) {
+			super();
+			screen = res;
+		}
+
+		@Override
+		public boolean keyDown(int keycode) {
+			ship.keyPressed(keycode);
+			if (keycode == Keys.SPACE)
+				return true;
+			return false;
+		}
+
+		@Override
+		public boolean keyUp(int keycode) {
+			ship.keyReleased(keycode);
+			return false;
+		}
+
+		@Override
+		public boolean keyTyped(char character) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean touchDown(int x, int y, int pointer, int button) {
+
+			if (button == Input.Buttons.LEFT) {
+				if (!firstHeld && !secondHeld) {
+					ship.getAcceleration().x = (float) (ship
+							.getMaxAcceleration() * Math.cos(ship
+							.getOrientation()));
+					ship.getAcceleration().y = (float) (ship
+							.getMaxAcceleration() * Math.sin(ship
+							.getOrientation()));
+					ship.reOrient(new Vector2(x, y));
+					firstHeld = true;
+				} else if (firstHeld && !secondHeld) {
+					ship.mousePressed(x, y);
+					secondHeld = true;
+				}
+			}
+			return false;
+
+		}
+
+		@Override
+		public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+			board.getShip().mouseReleased();
+			if (firstHeld && secondHeld)
+				secondHeld = false;
+			else if (firstHeld && !secondHeld) {
+				ship.setAcceleration(new Vector2(0, 0));
+				firstHeld = false;
+			}
+			return false;
+		}
+
+		@Override
+		public boolean touchDragged(int screenX, int screenY, int pointer) {
+			if (!secondHeld) {
+				ship.getAcceleration().x = (float) (ship.getMaxAcceleration() * Math
+						.cos(ship.getOrientation()));
+				ship.getAcceleration().y = (float) (ship.getMaxAcceleration() * Math
+						.sin(ship.getOrientation()));
+				ship.reOrient(new Vector2(screenX, screenY));
+			} else {
+				board.setFireLoc(new Vector2(screenX, screenY));
+			}
+			return false;
+		}
+
+		@Override
+		public boolean mouseMoved(int screenX, int screenY) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean scrolled(int amount) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+	}
+
+	private class DesktopInputProcessor implements InputProcessor {
+
+		private GameScreen screen;
+
+		public DesktopInputProcessor(GameScreen res) {
+			super();
+			screen = res;
+		}
 
 		@Override
 		public boolean touchDown(int x, int y, int pointer, int button) {
 			if (button == Input.Buttons.LEFT) {
-				if (((Gravity) ((Game) Gdx.app.getApplicationListener()))
-						.getPlatform() == Gravity.DESKTOP) {
-					ship.mousePressed();
-					return false;
-				}
-				if (((Gravity) ((Game) Gdx.app.getApplicationListener()))
-						.getPlatform() == Gravity.ANDROID) {
-					if (!firstHeld && !secondHeld) {
-						ship.getAcceleration().x = (float) (ship
-								.getMaxAcceleration() * Math.cos(ship
-								.getOrientation()));
-						ship.getAcceleration().y = (float) (ship
-								.getMaxAcceleration() * Math.sin(ship
-								.getOrientation()));
-						ship.reOrient(new Vector2(x, y));
-						firstHeld = true;
-					} else if (firstHeld && !secondHeld) {
-						ship.mousePressed(x, y);
-						secondHeld = true;
-					}
-
-				}
+				ship.mousePressed();
 			}
 			return false;
 		}
@@ -338,6 +420,9 @@ public class GameScreen implements Screen {
 		@Override
 		public boolean keyDown(int keycode) {
 			ship.keyPressed(keycode);
+			if (keycode == Keys.SPACE)
+				((Game) Gdx.app.getApplicationListener())
+						.setScreen(new StoreScreen(screen));
 			return false;
 		}
 
@@ -355,36 +440,13 @@ public class GameScreen implements Screen {
 
 		@Override
 		public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-			board.getShip().mouseReleased();
-			if (firstHeld && secondHeld)
-				secondHeld = false;
-			else if (firstHeld && !secondHeld) {
-				ship.setAcceleration(new Vector2(0, 0));
-				firstHeld = false;
-			}
-			// touchHeld = false;
+			ship.mouseReleased();
 			return false;
 		}
 
 		@Override
 		public boolean touchDragged(int screenX, int screenY, int pointer) {
-			if (((Gravity) ((Game) Gdx.app.getApplicationListener()))
-					.getPlatform() == Gravity.ANDROID) {
-				if (!secondHeld) {
-					ship.getAcceleration().x = (float) (ship
-							.getMaxAcceleration() * Math.cos(ship
-							.getOrientation()));
-					ship.getAcceleration().y = (float) (ship
-							.getMaxAcceleration() * Math.sin(ship
-							.getOrientation()));
-					ship.reOrient(new Vector2(screenX, screenY));
-				} else {
-					board.setFireLoc(new Vector2(screenX, screenY));
-				}
-			} else {
-				ship.reOrient(new Vector2(screenX, screenY));
-			}
-			// touchHeld = true;
+			ship.reOrient(new Vector2(screenX, screenY));
 			return false;
 		}
 

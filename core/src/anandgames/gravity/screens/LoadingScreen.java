@@ -38,7 +38,6 @@ public class LoadingScreen implements Screen {
 	public void queueAssets() {
 		manager.load("GravityData/Images/Sprites.png", Pixmap.class);
 		manager.load("GravityData/Sounds/Explosion.wav", Sound.class);
-//		manager.load("GravityData/Other/StarMap.tmx", TiledMap.class);
 		manager.load("GravityData/Sounds/loop1.mp3", Sound.class);
 		manager.load("GravityData/Images/ShipFrames.png", Texture.class);
 	}

@@ -3,7 +3,8 @@ package anandgames.gravity.entities;
 import java.util.ArrayList;
 
 import anandgames.gravity.Board;
-import anandgames.gravity.entities.pickups.Weapon;
+import anandgames.gravity.weapons.Pistol;
+import anandgames.gravity.weapons.Weapon;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -16,8 +17,7 @@ public class PlayerShip extends Entity {
 	private boolean upPressed, rightPressed, leftPressed, downPressed,
 			mouseHeld, shielded;
 	private int score, currentAmmo, money;
-	private Sound fire;
-	private Weapon weapon;
+	private Weapon weapon, defaultWeapon;
 	private double oldOrientation;
 
 	public PlayerShip(Board board) {
@@ -26,9 +26,8 @@ public class PlayerShip extends Entity {
 				2f, new Vector2(), board);
 		setRadius(20);
 		setScore(0);
-		// Initialize default fire sound byte
-		fire = Gdx.audio.newSound(Gdx.files
-				.internal("GravityData/Sounds/Laser_Shoot.wav"));
+		setDefaultWeapon(new Pistol());
+		setWeapon(defaultWeapon);
 		// Start with infinite ammo
 		currentAmmo = 0;
 		setMouseHeld(false);
@@ -39,10 +38,10 @@ public class PlayerShip extends Entity {
 	public void fire() {
 		// Fire current weapon and subtract from ammo
 		// If weapon is null, use default weapon
-		if (weapon == null || weapon.getAmmoPerShot() == 1) {
+		if (weapon.getAmmoPerShot() == 1) {
 			bullets.add(new Bullet(new Vector2(getPosition().x + 2,
 					getPosition().y + 2), getOrientation(), 7, getBoard()));
-			if (weapon != null)
+			if (weapon != defaultWeapon)
 				currentAmmo--;
 		}
 		// else fire equipped weapon
@@ -59,25 +58,21 @@ public class PlayerShip extends Entity {
 						getOrientation() + ((Math.PI / 12) * (i - 1)),
 						getWeapon().getAmmoRadius(), getBoard()));
 			}
-			currentAmmo -= limit;
-
+			if (weapon != defaultWeapon)
+				currentAmmo -= limit;
 
 		}
 		// Play correct sound
 		// If out of ammo set weapon to default
 		if (currentAmmo <= 0) {
-			setWeapon(null);
+			setWeapon(defaultWeapon);
 		}
-		Sound sound;
-		if (weapon == null)
-			sound = fire;
-		else
-			sound = weapon.getSound();
+		Sound sound = weapon.getFire();
 		sound.play(.5f);
 		System.out.println(currentAmmo);
 
 	}
-	
+
 	public void fire(int x, int y) {
 		oldOrientation = getOrientation();
 		reOrient(new Vector2(x, y));
@@ -91,7 +86,7 @@ public class PlayerShip extends Entity {
 		setMouseHeld(true);
 	}
 
-	//Firing a bullet(used for android)
+	// Firing a bullet(used for android)
 	public void mousePressed(int x, int y) {
 		fire(x, y);
 		setMouseHeld(true);
@@ -202,12 +197,13 @@ public class PlayerShip extends Entity {
 	}
 
 	public void setWeapon(Weapon w) {
-		if (w != null) {
-			if (weapon != null && weapon.equals(w))
+		if (w.getClass() != defaultWeapon.getClass()) {
+			if (weapon != null && weapon.getClass() == w.getClass())
 				currentAmmo += w.getAmmo();
 			else
 				currentAmmo = w.getAmmo();
 		}
+
 		weapon = w;
 	}
 
@@ -238,10 +234,17 @@ public class PlayerShip extends Entity {
 	public void setMoney(int money) {
 		this.money = money;
 	}
-	
+
 	public void addMoney(int money) {
 		this.money += money;
 	}
-	
+
+	public Weapon getDefaultWeapon() {
+		return defaultWeapon;
+	}
+
+	public void setDefaultWeapon(Weapon defaultWeapon) {
+		this.defaultWeapon = defaultWeapon;
+	}
 
 }
