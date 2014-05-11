@@ -6,11 +6,13 @@ import java.util.Random;
 import anandgames.gravity.entities.Asteroid;
 import anandgames.gravity.entities.Bullet;
 import anandgames.gravity.entities.Enemy;
+import anandgames.gravity.entities.Entity;
+import anandgames.gravity.entities.Planet;
 import anandgames.gravity.entities.PlayerShip;
 import anandgames.gravity.entities.pickups.Money;
 import anandgames.gravity.entities.pickups.WeaponPickup;
 import anandgames.gravity.screens.GameScreen;
-import anandgames.gravity.tweens.ShotgunTweenAccessor;
+import anandgames.gravity.tweens.OrientationTweenAccessor;
 import anandgames.gravity.weapons.FlameThrower;
 import anandgames.gravity.weapons.Rifle;
 import anandgames.gravity.weapons.Shotgun;
@@ -53,7 +55,7 @@ public class Board {
 	// Set up the Tween Manager
 	public void initTweenManager() {
 		tManager = new TweenManager();
-		Tween.registerAccessor(WeaponPickup.class, new ShotgunTweenAccessor());
+		Tween.registerAccessor(Entity.class, new OrientationTweenAccessor());
 	}
 
 	// Initialize enemies
@@ -69,12 +71,16 @@ public class Board {
 	// Add Planets to the Board
 	public void initPlanets() {
 		planets = new ArrayList<Planet>();
-		planets.add(new Planet("Moon", 768, 8192 - 2624, 224, 1.5f));
-		planets.add(new Planet("Mars", 6976, 8192 - 896, 96, .7f));
-		planets.add(new Planet("Marsh", 2560, 8192 - 6080, 160, 1f));
-		planets.add(new Planet("Jungle", 3776, 8192 - 2816, 160, 1.2f));
-		planets.add(new Planet("Base", 3776, 8192 - 4880, 128, .7f));
-		planets.add(new Planet("Earth", 6976, 8192 - 6080, 256, 2f));
+		Random r = new Random();
+		// Add 7 randomly generated planets
+		for (int i = 0; i < 10; i++) {
+			Planet p = new Planet(new Vector2(r.nextInt(width),
+					r.nextInt(height)), new Vector2(1, r.nextInt(6)),
+					r.nextInt(200) + 100, this);
+			System.out.println(p.getPosition());
+			planets.add(p);
+			Tween.to(p, 0, 20.0f).target(360).repeat(-1, 0f).start(tManager);
+		}
 	}
 
 	// Check if the ship is over a planet
@@ -83,10 +89,10 @@ public class Board {
 			Planet p = planets.get(i);
 			int dist = (int) Math
 					.sqrt((Math.pow(
-							ship.getPosition().x + ship.getRadius() - p.getX(),
-							2) + (Math.pow(
-							ship.getPosition().y + ship.getRadius() - p.getY(),
-							2))));
+							ship.getPosition().x + ship.getRadius()
+									- p.getPosition().x, 2) + (Math.pow(
+							ship.getPosition().y + ship.getRadius()
+									- p.getPosition().y, 2))));
 			if (dist < ship.getRadius() + p.getRadius())
 				return true;
 		}
@@ -159,8 +165,8 @@ public class Board {
 		}
 
 		// Check collisions between all entities
-		if (collisions)
-			checkCollisions();
+		// if (collisions)
+		// checkCollisions();
 
 		// Check if entities are affected by any planets
 		checkPlanetEffects();
@@ -198,7 +204,7 @@ public class Board {
 		// ship.reOrient();
 
 		int limit = ship.getWeapon().getLimiter();
-		
+
 		// Fire if the mouse is held
 		if (ship.isMouseHeld() && counter == limit) {
 			if (fireLoc == null)
@@ -324,10 +330,12 @@ public class Board {
 	public void checkPlanetEffects() {
 		Vector2 ship = this.ship.getPosition();
 		for (Planet x : planets) {
-			Vector2 planet = new Vector2(x.getX(), x.getY());
+			Vector2 planet = new Vector2(x.getPosition().x, x.getPosition().y);
 
-			float deltaX = (ship.x + this.ship.getRadius()) - (planet.x);
-			float deltaY = (ship.y + this.ship.getRadius()) - (planet.y);
+			float deltaX = (ship.x + this.ship.getRadius())
+					- (planet.x + x.getRadius());
+			float deltaY = (ship.y + this.ship.getRadius())
+					- (planet.y + x.getRadius());
 			float dist = (float) Math.sqrt(Math.pow(deltaX, 2)
 					+ Math.pow(deltaY, 2));
 
@@ -398,5 +406,9 @@ public class Board {
 
 	public ArrayList<Money> getMoneyList() {
 		return moneyList;
+	}
+
+	public ArrayList<Planet> getPlanets() {
+		return planets;
 	}
 }

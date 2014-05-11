@@ -62,17 +62,17 @@ public class Entity {
 	public void move() {
 		if (acceleration.x == 0 && acceleration.y == 0) {
 			position.add(velocity);
-			return;
+		} else {
+			velocity.add(acceleration);
+			double currentSpeed = Math.sqrt(Math.pow(velocity.x, 2)
+					+ Math.pow(velocity.y, 2));
+			if (currentSpeed > maxSpeed)
+				currentSpeed = maxSpeed;
+			double angle = Math.atan2(velocity.y, velocity.x);
+			velocity.x = (float) (Math.cos(angle) * currentSpeed);
+			velocity.y = (float) (Math.sin(angle) * currentSpeed);
+			position.add(velocity);
 		}
-		velocity.add(acceleration);
-		double currentSpeed = Math.sqrt(Math.pow(velocity.x, 2)
-				+ Math.pow(velocity.y, 2));
-		if (currentSpeed > maxSpeed)
-			currentSpeed = maxSpeed;
-		double angle = Math.atan2(velocity.y, velocity.x);
-		velocity.x = (float) (Math.cos(angle) * currentSpeed);
-		velocity.y = (float) (Math.sin(angle) * currentSpeed);
-		position.add(velocity);
 		if (position.x > board.getWidth())
 			position.x = board.getWidth();
 		if (position.y > board.getHeight())

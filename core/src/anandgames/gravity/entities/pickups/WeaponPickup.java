@@ -21,13 +21,13 @@ public class WeaponPickup extends Entity {
 		setRadius(16);
 		switch(id) {
 		case FLAMETHROWER:
-			setSpriteKey(new Vector2(1,10));
+			setSpriteKey(new Vector2(0,5));
 			break;
 		case SHOTGUN:
-			setSpriteKey(new Vector2(1, 9));
+			setSpriteKey(new Vector2(0, 4));
 			break;
 		case RIFLE:
-			setSpriteKey(new Vector2(1, 11));
+			setSpriteKey(new Vector2(0, 5));
 		}
 	}
 

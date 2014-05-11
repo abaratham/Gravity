@@ -13,7 +13,7 @@ public class Money extends Entity {
 		super(pos, 0, 0, 0, new Vector2(), b);
 		setValue(val);
 		setRadius(16);
-		setSpriteKey(new Vector2(1, 13));
+		setSpriteKey(new Vector2(0, 7));
 	}
 
 	public int getValue() {

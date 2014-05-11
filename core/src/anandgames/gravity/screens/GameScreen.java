@@ -8,6 +8,7 @@ import anandgames.gravity.Gravity;
 import anandgames.gravity.animations.ExplosionAnimation;
 import anandgames.gravity.entities.Asteroid;
 import anandgames.gravity.entities.Enemy;
+import anandgames.gravity.entities.Planet;
 import anandgames.gravity.entities.PlayerShip;
 import anandgames.gravity.entities.pickups.Money;
 import anandgames.gravity.entities.pickups.WeaponPickup;
@@ -84,7 +85,7 @@ public class GameScreen implements Screen {
 		Pixmap pix = manager.get("GravityData/Images/Sprites.png");
 		spriteSheet = new Texture(pix);
 		spriteBatch = new SpriteBatch();
-		sprites = new TextureRegion(spriteSheet).split(16, 16);
+		sprites = new TextureRegion(spriteSheet).split(64, 64);
 
 		// Initialize game components
 		board = new Board(this);
@@ -155,6 +156,7 @@ public class GameScreen implements Screen {
 			drawAsteroids();
 			drawInfo();
 			drawMoney();
+			drawPlanets();
 			if (message != null) {
 				drawMessage(delta);
 				System.out.println(message);
@@ -166,6 +168,18 @@ public class GameScreen implements Screen {
 			((Game) (Gdx.app.getApplicationListener()))
 					.setScreen(new GameOverScreen(ship.getScore()));
 
+		}
+	}
+
+	public void drawPlanets() {
+		for (Planet p : board.getPlanets()) {
+			spriteBatch
+					.draw(sprites[(int) p.getSpriteKey().x][(int) p
+							.getSpriteKey().y], (float) p.getPosition().x,
+							(float) p.getPosition().y, p.getRadius(), p
+									.getRadius(), 2 * p.getRadius(), 2 * p
+									.getRadius(), 1f, 1f, (float) p
+									.getOrientation());
 		}
 	}
 

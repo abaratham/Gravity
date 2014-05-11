@@ -29,8 +29,8 @@ public class Asteroid extends Entity {
 		super.move();
 		Vector2 pos = getPosition();
 		//Remove the asteroid once it is outside the bounds of the board
-		if (pos.x > getBoard().getWidth() || pos.x < 0
-				|| pos.y > getBoard().getHeight() || pos.y < 0)
+		if (pos.x >= getBoard().getWidth() || pos.x <= 0
+				|| pos.y >= getBoard().getHeight() || pos.y <= 0)
 			getBoard().getAsteroids().remove(this);
 	}
 
