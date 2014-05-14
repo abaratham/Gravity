@@ -13,7 +13,7 @@ public class Planet extends Entity {
 		super(startPos, 0,0,0,key,b);
 		setRadius(radius);
 		setRange(radius * 3);
-		setMaxEffect(radius / 150);
+		setMaxEffect(radius / 100);
 	}
 
 	public int getRange() {

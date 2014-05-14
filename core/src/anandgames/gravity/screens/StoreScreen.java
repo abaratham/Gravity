@@ -10,6 +10,7 @@ import anandgames.gravity.weapons.Shotgun;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,7 +21,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class StoreScreen implements Screen {
@@ -38,6 +41,7 @@ public class StoreScreen implements Screen {
 	private LinkedList<String> messageQueue;
 	private int mCounter;
 	private PlayerShip ship;
+	private Label heading;
 
 	public StoreScreen(Screen resume) {
 		super();
@@ -51,6 +55,7 @@ public class StoreScreen implements Screen {
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		heading.setText("STORE\nMoney: $" + ship.getMoney());
 
 		stage.act(delta);
 		stage.draw();
@@ -109,17 +114,13 @@ public class StoreScreen implements Screen {
 		textButtonStyle.pressedOffsetX = 1;
 		textButtonStyle.pressedOffsetY = -1;
 		textButtonStyle.font = black;
+		
+		LabelStyle labelStyle = new LabelStyle(white, Color.WHITE);
+		heading = new Label("STORE\nMoney: $" + ship.getMoney(), labelStyle);
+		heading.setAlignment(Align.center);
+		heading.setFontScale(2f);
 
-		exit = new TextButton("Exit", textButtonStyle);
-
-		exit.pad(15, 100, 15, 100);
-		exit.addListener(new ClickListener() {
-
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				Gdx.app.exit();
-			}
-		});
+		
 
 		resumeButton = new TextButton("Resume", textButtonStyle);
 
@@ -197,12 +198,12 @@ public class StoreScreen implements Screen {
 			}
 		});
 
+		table.add(heading).row();
 		table.add(flameThrower).spaceRight(15).spaceBottom(15);
 		table.add(rifle).spaceRight(15).row().spaceBottom(15);
 		table.add(shotgun).spaceRight(15);
 		table.add(speedUp).row();
 		table.add(resumeButton).spaceBottom(15).spaceTop(15);
-		table.add(exit).spaceBottom(15).spaceTop(15).row();
 		table.center();
 		table.debug();
 		stage.addActor(table);

@@ -10,8 +10,12 @@ import anandgames.gravity.entities.Asteroid;
 import anandgames.gravity.entities.Enemy;
 import anandgames.gravity.entities.Planet;
 import anandgames.gravity.entities.PlayerShip;
+import anandgames.gravity.entities.Tank;
 import anandgames.gravity.entities.pickups.Money;
 import anandgames.gravity.entities.pickups.WeaponPickup;
+import anandgames.gravity.weapons.FlameThrower;
+import anandgames.gravity.weapons.Rifle;
+import anandgames.gravity.weapons.Shotgun;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -44,7 +48,7 @@ public class GameScreen implements Screen {
 	private Board board;
 	private Animation shipAnimation;
 	private TextureRegion currentShipFrame;
-	private BitmapFont font, messageFont;
+	private BitmapFont font, messageFont, smallFont;
 	private PlayerShip ship;
 	private boolean firstHeld, secondHeld;
 	private int frameCount, mx, my, mCounter;
@@ -71,10 +75,13 @@ public class GameScreen implements Screen {
 				Gdx.files.internal("GravityData/Fonts/White.fnt"), false);
 		font.setScale(.8f);
 
+		smallFont = new BitmapFont(
+				Gdx.files.internal("GravityData/Fonts/White.fnt"), false);
+		smallFont.setScale(.5f);
+
 		messageFont = new BitmapFont(
 				Gdx.files.internal("GravityData/Fonts/White.fnt"), false);
 		Color c = messageFont.getColor();
-		// System.out.println(c.a);
 		messageFont.setColor(c.r, c.g, c.b, 1);
 
 		// Initialize Tween Manager
@@ -147,6 +154,7 @@ public class GameScreen implements Screen {
 			spriteBatch.setProjectionMatrix(cam.combined);
 			spriteBatch.begin();
 
+			drawPlanets();
 			drawBullets();
 			drawEnemies();
 			drawShip();
@@ -156,7 +164,7 @@ public class GameScreen implements Screen {
 			drawAsteroids();
 			drawInfo();
 			drawMoney();
-			drawPlanets();
+
 			if (message != null) {
 				drawMessage(delta);
 				System.out.println(message);
@@ -275,6 +283,17 @@ public class GameScreen implements Screen {
 	public void drawEnemies() {
 		for (int i = 0; i < board.getEnemies().size(); i++) {
 			Enemy e = board.getEnemies().get(i);
+			if (e instanceof Tank) {
+				Tank t = (Tank) e;
+				smallFont.draw(spriteBatch, "HP: " + t.getHp(),
+						t.getPosition().x, t.getPosition().y - 20);
+				for (int j = 0; j < t.getBullets().size(); j++) {
+					spriteBatch.draw(sprites[0][2],
+							(float) t.getBullets().get(j).getPosition().x,
+							(float) t.getBullets().get(j).getPosition().y, 7,
+							7, 14, 14, 1f, 1f, 0f);
+				}
+			}
 			spriteBatch
 					.draw(sprites[(int) e.getSpriteKey().x][(int) e
 							.getSpriteKey().y], (float) e.getPosition().x,
@@ -437,6 +456,26 @@ public class GameScreen implements Screen {
 			if (keycode == Keys.SPACE)
 				((Game) Gdx.app.getApplicationListener())
 						.setScreen(new StoreScreen(screen));
+			if (keycode == Keys.UP)
+				ship.setMoney(ship.getMoney() + 100000);
+			if (keycode == Keys.E)
+				board.getEnemies().clear();
+			if (keycode == Keys.F) {
+				ship.setDefaultWeapon(new FlameThrower());
+				ship.setWeapon(new FlameThrower());
+			}
+			if (keycode == Keys.G) {
+				ship.setDefaultWeapon(new Shotgun());
+				ship.setWeapon(new Shotgun());
+			}
+			if (keycode == Keys.R) {
+				ship.setDefaultWeapon(new Rifle());
+				ship.setWeapon(new Rifle());
+			}
+			if (keycode == Keys.C) {
+				board.collisions = !board.collisions;
+				showMessage("Collisions: " + board.collisions);
+			}
 			return false;
 		}
 

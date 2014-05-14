@@ -9,7 +9,7 @@ public class Enemy extends Entity {
 
 	//Standard "Chaser" enemy
 	public Enemy(Vector2 startPos, Board board) {
-		super(startPos, 0, 15, .75f, new Vector2(0,1), board);
+		super(startPos, 0, 12, .75f, new Vector2(0,1), board);
 		setRadius(20);
 	}
 

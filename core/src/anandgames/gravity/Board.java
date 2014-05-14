@@ -9,6 +9,7 @@ import anandgames.gravity.entities.Enemy;
 import anandgames.gravity.entities.Entity;
 import anandgames.gravity.entities.Planet;
 import anandgames.gravity.entities.PlayerShip;
+import anandgames.gravity.entities.Tank;
 import anandgames.gravity.entities.pickups.Money;
 import anandgames.gravity.entities.pickups.WeaponPickup;
 import anandgames.gravity.screens.GameScreen;
@@ -72,14 +73,24 @@ public class Board {
 	public void initPlanets() {
 		planets = new ArrayList<Planet>();
 		Random r = new Random();
-		// Add 7 randomly generated planets
-		for (int i = 0; i < 10; i++) {
+		// Add the 7 planets at randomly generated locations
+		for (int i = 0; i < 7; i++) {
 			Planet p = new Planet(new Vector2(r.nextInt(width),
-					r.nextInt(height)), new Vector2(1, r.nextInt(6)),
+					r.nextInt(height)), new Vector2(1, i),
 					r.nextInt(200) + 100, this);
-			System.out.println(p.getPosition());
+			// Prevent planets from "hanging" over the edge of the world
+			if (p.getPosition().x > getWidth() - p.getRadius())
+				p.getPosition().x = getWidth() - p.getRadius();
+			if (p.getPosition().x < p.getRadius())
+				p.getPosition().x = p.getRadius();
+			if (p.getPosition().y > getHeight() - p.getRadius())
+				p.getPosition().y = getHeight() - p.getRadius();
+			if (p.getPosition().y < p.getRadius())
+				p.getPosition().y = p.getRadius();
 			planets.add(p);
-			Tween.to(p, 0, 20.0f).target(360).repeat(-1, 0f).start(tManager);
+			// Start rotating the planets at a random speed
+			Tween.to(p, 0, (float) r.nextInt(40) + 10).target(360)
+					.repeat(-1, 0f).start(tManager);
 		}
 	}
 
@@ -105,6 +116,12 @@ public class Board {
 		for (int i = 0; i < 5 * currentWave; i++) {
 			enemies.add(new Enemy(new Vector2(r.nextInt(getWidth()), r
 					.nextInt(getHeight())), this));
+		}
+		if (currentWave >= 5) {
+			for (int i = 0; i < currentWave; i++) {
+				enemies.add(new Tank(new Vector2(r.nextInt(getWidth()), r
+						.nextInt(getHeight())), this));
+			}
 		}
 	}
 
@@ -155,7 +172,7 @@ public class Board {
 		if (f <= 0.05) {
 			spawnAsteroid();
 		}
-		if (f <= .005)
+		if (f <= .001)
 			spawnWeapon();
 		if (enemies.size() == 0) {
 			currentWave++;
@@ -165,8 +182,8 @@ public class Board {
 		}
 
 		// Check collisions between all entities
-		// if (collisions)
-		// checkCollisions();
+		if (collisions)
+			checkCollisions();
 
 		// Check if entities are affected by any planets
 		checkPlanetEffects();
@@ -176,6 +193,11 @@ public class Board {
 			Enemy e = enemies.get(i);
 			if (e.isVisible()) {
 				e.move();
+			}
+			if (e instanceof Tank) {
+				Tank t = (Tank) e;
+				for (int j = 0; j < t.getBullets().size(); j++)
+					t.getBullets().get(j).move();
 			}
 		}
 
@@ -287,16 +309,26 @@ public class Board {
 			// Check bullet-enemy collisions for each bullet
 			for (int j = 0; j < bullets.size(); j++) {
 				if ((bullets.get(j)).collidesWith(e)) {
-					e.setVisible(false);
-					bullets.get(j).setVisible(false);
-					game.addExplosion((int) e.getPosition().x,
-							(int) e.getPosition().y);
-					game.getSound("Explosion").play(.7f);
-					bullets.remove(j);
-					ship.setScore(ship.getScore() + 10);
-					enemies.remove(i);
-					int val = new Random().nextInt(100);
-					moneyList.add(new Money(e.getPosition(), val, this));
+					if (e instanceof Tank && ((Tank) e).getHp() > 0) {
+						Tank t = (Tank) e;
+						t.setHp(t.getHp() - 1);
+						game.getSound("Explosion").play(.7f);
+						bullets.remove(j);
+						game.addExplosion((int) t.getPosition().x,
+								(int) t.getPosition().y);
+						t.setVelocity(new Vector2(0, 0));
+					} else {
+						e.setVisible(false);
+						bullets.get(j).setVisible(false);
+						game.addExplosion((int) e.getPosition().x,
+								(int) e.getPosition().y);
+						game.getSound("Explosion").play(.7f);
+						bullets.remove(j);
+						ship.setScore(ship.getScore() + 10);
+						enemies.remove(i);
+						int val = new Random().nextInt(100);
+						moneyList.add(new Money(e.getPosition(), val, this));
+					}
 					if (enemies.size() == 0)
 						return;
 				}

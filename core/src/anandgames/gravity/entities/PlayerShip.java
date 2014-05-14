@@ -22,7 +22,7 @@ public class PlayerShip extends Entity {
 
 	public PlayerShip(Board board) {
 		// Always initialized at the center of the board
-		super(new Vector2(board.getWidth() / 2, board.getHeight() / 2), 0, 15,
+		super(new Vector2(board.getWidth() / 2, board.getHeight() / 2), 0, 12,
 				2f, new Vector2(), board);
 		setRadius(20);
 		setScore(0);
