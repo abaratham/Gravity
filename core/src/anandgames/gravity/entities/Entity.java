@@ -2,6 +2,7 @@ package anandgames.gravity.entities;
 
 import anandgames.gravity.Board;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 
 public class Entity {
@@ -9,22 +10,43 @@ public class Entity {
 	private int radius, maxSpeed;
 	private Vector2 spriteKey;
 	private double orientation;
-	private boolean isVisible;
 	private float maxAcceleration;
 	private Vector2 position, velocity, acceleration;
 	private Board board;
 
 	public Entity(Vector2 startPos, double orientation, int speed,
 			float acceleration, Vector2 key, Board b) {
+		// Entity is not initially moving
 		velocity = new Vector2(0, 0);
 		setAcceleration(new Vector2(0, 0));
 		maxAcceleration = acceleration;
 		setPosition(startPos);
 		setOrientation(orientation);
 		setSpriteKey(key);
-		setVisible(true);
 		setMaxSpeed(speed);
 		setBoard(b);
+	}
+
+	// Check if the entity's location is on the screen, if not, push
+	// it to the appropriate boundary
+	public void checkSpawn() {
+		float halfWidth = Gdx.graphics.getWidth() / 2, halfHeight = Gdx.graphics
+				.getHeight() / 2;
+		Vector2 shipLoc = board.getShip().getPosition();
+		float minx = shipLoc.x - halfWidth, maxx = shipLoc.x + halfWidth, miny = shipLoc.y
+				- halfHeight, maxy = shipLoc.y;
+		float x = getPosition().x, y = getPosition().y;
+		// The entity is within the bounds of the screen
+		if (x > minx && x < maxx && y > miny && y < maxy) {
+			if (x - minx > maxx - x)
+				getPosition().x = maxx;
+			else
+				getPosition().x = minx;
+			if (y - miny > maxy - y)
+				getPosition().y = maxy;
+			else
+				getPosition().x = miny;
+		}
 	}
 
 	public int getMaxSpeed() {
@@ -59,6 +81,7 @@ public class Entity {
 		this.orientation = orientation;
 	}
 
+	// Increase velocity by acceleration, increase position by velocity
 	public void move() {
 		if (acceleration.x == 0 && acceleration.y == 0) {
 			position.add(velocity);
@@ -83,13 +106,13 @@ public class Entity {
 			position.y = 0;
 	}
 
-	// Get the distance to Entity e
+	// Get the distance to an Entity
 	public float getDistanceTo(Entity e) {
 		float deltaX = (this.getPosition().x + this.getRadius())
 				- (e.getPosition().x + e.getRadius());
 
-		float deltaY = (this.getPosition().y - this.getRadius())
-				- (e.getPosition().y - e.getRadius());
+		float deltaY = (this.getPosition().y + this.getRadius())
+				- (e.getPosition().y + e.getRadius());
 
 		float dist = (float) Math.sqrt(Math.pow(deltaX, 2)
 				+ Math.pow(deltaY, 2));
@@ -98,15 +121,7 @@ public class Entity {
 
 	// Return whether or not this entity collides with Entity e
 	public boolean collidesWith(Entity e) {
-		return this.getRadius() + e.getRadius() > this.getDistanceTo(e);
-	}
-
-	public boolean isVisible() {
-		return isVisible;
-	}
-
-	public void setVisible(boolean isVisible) {
-		this.isVisible = isVisible;
+		return this.getRadius() + e.getRadius() >= this.getDistanceTo(e);
 	}
 
 	public int getRadius() {

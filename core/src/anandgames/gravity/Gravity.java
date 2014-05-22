@@ -1,6 +1,6 @@
 package anandgames.gravity;
 
-import anandgames.gravity.screens.MainMenu;
+import anandgames.gravity.screens.SplashScreen;
 
 import com.badlogic.gdx.Game;
 
@@ -8,7 +8,7 @@ public class Gravity extends Game {
 	public static final int DESKTOP = 0;
 	public static final int ANDROID = 1;
 	public static final int HTML = 2;
-	public static final String VERSION_NUMBER = "v0.8.1";
+	public static final String VERSION_NUMBER = "v1.0";
 	
 	private int platform;
 
@@ -18,7 +18,7 @@ public class Gravity extends Game {
 	}
 	
 	public void create() {
-		setScreen(new MainMenu());
+		setScreen(new SplashScreen());
 	}
 
 	public void resize(int width, int height) {

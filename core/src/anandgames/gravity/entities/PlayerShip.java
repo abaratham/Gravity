@@ -19,6 +19,7 @@ public class PlayerShip extends Entity {
 	private int score, currentAmmo, money;
 	private Weapon weapon, defaultWeapon;
 	private double oldOrientation;
+	private int bombs;
 
 	public PlayerShip(Board board) {
 		// Always initialized at the center of the board
@@ -34,24 +35,36 @@ public class PlayerShip extends Entity {
 
 	}
 
+	public void dropBomb() {
+		if (bombs == 0)
+			return;
+		for (int i = 0; i < 360; i++) {
+			bullets.add(new Bullet(new Vector2(getPosition().x + 2,
+					getPosition().y + 2), i, getWeapon().getAmmoRadius(),
+					getBoard()));
+		}
+		bombs--;
+	}
+
 	// Fire a new bullet and add it to the ship's bullets list
 	public void fire() {
 		// Fire current weapon and subtract from ammo
-		// If weapon is null, use default weapon
 		if (weapon.getAmmoPerShot() == 1) {
 			bullets.add(new Bullet(new Vector2(getPosition().x + 2,
-					getPosition().y + 2), getOrientation(), 7, getBoard()));
+					getPosition().y + 2), getOrientation(), weapon
+					.getAmmoRadius(), getBoard()));
 			if (weapon != defaultWeapon)
 				currentAmmo--;
 		}
-		// else fire equipped weapon
+		//The current weapon fires more than one bullet at a time
 		else {
 			// Make sure the ship doesn't fire more ammo than it has
 			int limit;
-			if (currentAmmo < weapon.getAmmoPerShot())
-				limit = currentAmmo;
-			else
+			if (currentAmmo >= weapon.getAmmoPerShot() || weapon.equals(defaultWeapon))
 				limit = weapon.getAmmoPerShot();
+			else
+				limit = currentAmmo;
+			//Fire each bullet at an angle
 			for (int i = 0; i < limit; i++) {
 				bullets.add(new Bullet(new Vector2(getPosition().x
 						+ getRadius(), getPosition().y + getRadius()),
@@ -73,6 +86,7 @@ public class PlayerShip extends Entity {
 
 	}
 
+	// USED ONLY IN MOBILE VERSION
 	public void fire(int x, int y) {
 		oldOrientation = getOrientation();
 		reOrient(new Vector2(x, y));
@@ -86,7 +100,7 @@ public class PlayerShip extends Entity {
 		setMouseHeld(true);
 	}
 
-	// Firing a bullet(used for android)
+	// USED ONLY IN MOBILE VERSION
 	public void mousePressed(int x, int y) {
 		fire(x, y);
 		setMouseHeld(true);
@@ -162,10 +176,6 @@ public class PlayerShip extends Entity {
 			downPressed = false;
 		}
 
-		if (key == Keys.R) {
-			getBoard().reset();
-		}
-
 	}
 
 	// Orient the ship to face the mouse
@@ -196,8 +206,10 @@ public class PlayerShip extends Entity {
 		this.score = score;
 	}
 
+	// Set the current weapon to a new Weapon
 	public void setWeapon(Weapon w) {
 		if (w.getClass() != defaultWeapon.getClass()) {
+			// Stack ammo of same type
 			if (weapon != null && weapon.getClass() == w.getClass())
 				currentAmmo += w.getAmmo();
 			else
@@ -245,6 +257,18 @@ public class PlayerShip extends Entity {
 
 	public void setDefaultWeapon(Weapon defaultWeapon) {
 		this.defaultWeapon = defaultWeapon;
+	}
+
+	public int getBombs() {
+		return bombs;
+	}
+
+	public void setBombs(int bombs) {
+		this.bombs = bombs;
+	}
+
+	public void addBomb() {
+		bombs++;
 	}
 
 }

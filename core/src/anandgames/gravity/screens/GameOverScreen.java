@@ -39,30 +39,27 @@ public class GameOverScreen implements Screen {
 	
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void render(float delta) {
+		//Clear the screen
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		//Update and draw the stage
 		stage.act(delta);
 		stage.draw();
 		
+		//Write the version number
 		batch.begin();
 		white.draw(batch, Gravity.VERSION_NUMBER, 0, 20);
 		batch.end();
@@ -71,17 +68,16 @@ public class GameOverScreen implements Screen {
 
 	@Override
 	public void resize(int arg0, int arg1) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
+	//Initialize all elements of the stage, fonts, and button styles. 
 	public void show() {
 		batch = new SpriteBatch();
 		stage = new Stage();
@@ -108,6 +104,7 @@ public class GameOverScreen implements Screen {
 		exit.addListener(new ClickListener() {
 
 			@Override
+			//Clicking this button exits the game
 			public void clicked(InputEvent event, float x, float y) {
 				Gdx.app.exit();
 			}
@@ -124,6 +121,7 @@ public class GameOverScreen implements Screen {
 		playAgainButton.addListener(new ClickListener() {
 
 			@Override
+			//Clicking this button starts a new game
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
 				.setScreen(new LoadingScreen());

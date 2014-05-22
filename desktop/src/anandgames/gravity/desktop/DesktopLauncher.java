@@ -10,7 +10,7 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 		cfg.width = 1280;
 		cfg.height = 720;
-		cfg.fullscreen = false;
+		cfg.fullscreen = true;
 		cfg.vSyncEnabled = true;
 		new LwjglApplication(new Gravity(Gravity.DESKTOP), cfg);
 	}

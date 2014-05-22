@@ -35,6 +35,7 @@ public class LoadingScreen implements Screen {
 		queueAssets();
 	}
 	
+	//Queue all assets to be loaded
 	public void queueAssets() {
 		manager.load("GravityData/Images/Sprites.png", Pixmap.class);
 		manager.load("GravityData/Sounds/Explosion.wav", Sound.class);
@@ -44,12 +45,16 @@ public class LoadingScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		//Clear the screen
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		//Continue loading assets, if done, start the game!
 		if (manager.update())
 			((Game) Gdx.app.getApplicationListener())
 			.setScreen(new GameScreen(manager));
+		
+		//Update and draw the stage
 		stage.act(delta);
 		stage.draw();
 	}
@@ -61,6 +66,7 @@ public class LoadingScreen implements Screen {
 	}
 
 	@Override
+	//Initialize all elements of the stage, fonts, and button styles. 
 	public void show() {
 		stage = new Stage();
 		atlas = new TextureAtlas("GravityData/ui/Button.pack");
@@ -83,13 +89,8 @@ public class LoadingScreen implements Screen {
 
 		loading = new Label("LOADING...", labelStyle);
 		loading.setAlignment(Align.center);
-		loading.setFontScale(2f);
-		
-//		Label chill = new Label("so chill the fuck out", labelStyle);
-		
-
+		loading.setFontScale(2f);		
 		table.add(loading).center().row();
-//		table.add(chill);
 		table.debug();
 		stage.addActor(table);
 	}

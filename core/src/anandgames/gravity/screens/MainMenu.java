@@ -7,6 +7,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -26,21 +28,25 @@ public class MainMenu implements Screen {
 	private Stage stage;
 	private Table table;
 	private TextButton play, exit;
-	private Label heading;
 	private Skin skin;
 	private BitmapFont white, black;
 	private TextureAtlas atlas;
 	private SpriteBatch batch;
+	private Texture tex;
 
 	@Override
 	public void render(float delta) {
+		// Clear the screen
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		// Write the version number
 		batch.begin();
+		batch.draw(tex, 0, 0);
 		white.draw(batch, Gravity.VERSION_NUMBER, 0, 20);
 		batch.end();
 
+		// Update and draw the stage
 		stage.act(delta);
 		stage.draw();
 
@@ -52,6 +58,7 @@ public class MainMenu implements Screen {
 	}
 
 	@Override
+	// Initialize all elements of the stage, fonts, and button styles.
 	public void show() {
 		batch = new SpriteBatch();
 		stage = new Stage();
@@ -66,10 +73,6 @@ public class MainMenu implements Screen {
 		white = new BitmapFont(
 				Gdx.files.internal("GravityData/Fonts/White.fnt"), false);
 		LabelStyle labelStyle = new LabelStyle(white, Color.WHITE);
-
-		heading = new Label("GRAVITY", labelStyle);
-		heading.setAlignment(Align.center);
-		heading.setFontScale(2f);
 
 		black = new BitmapFont(
 				Gdx.files.internal("GravityData/Fonts/Black.fnt"), false);
@@ -86,6 +89,7 @@ public class MainMenu implements Screen {
 		play.addListener(new ClickListener() {
 
 			@Override
+			// Clicking this button begins the loading process
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
 						.setScreen(new LoadingScreen());
@@ -97,16 +101,19 @@ public class MainMenu implements Screen {
 		exit.addListener(new ClickListener() {
 
 			@Override
+			// Clicking this button exits the game
 			public void clicked(InputEvent event, float x, float y) {
 				Gdx.app.exit();
 			}
 		});
-		table.add(heading).spaceBottom(150).row();
 		table.add(play).spaceBottom(15).row();
 		table.add(exit).spaceBottom(15).row();
 		table.debug();
 		stage.addActor(table);
 		white.setScale(.5f);
+		Pixmap pix = new Pixmap(
+				Gdx.files.internal("GravityData/Images/splash.png"));
+		tex = new Texture(pix);
 	}
 
 	@Override

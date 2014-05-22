@@ -30,8 +30,7 @@ public class StoreScreen implements Screen {
 
 	private Stage stage;
 	private Table table;
-	private TextButton exit, resumeButton;
-	private Label label;
+	private TextButton resumeButton;
 	private Skin skin;
 	private BitmapFont white, black;
 	private TextureAtlas atlas;
@@ -53,13 +52,16 @@ public class StoreScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		// Clear the screen
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		heading.setText("STORE\nMoney: $" + ship.getMoney());
 
+		// Update and draw the stage
 		stage.act(delta);
 		stage.draw();
 
+		// Draw the message if there is one
 		batch.begin();
 		if (message != null) {
 			drawMessage(delta);
@@ -68,12 +70,14 @@ public class StoreScreen implements Screen {
 		batch.end();
 	}
 
+	// Draw the current message
 	public void drawMessage(float delta) {
 		mCounter++;
 
 		white.draw(batch, message, (Gdx.graphics.getWidth() / 2)
 				- (10 * message.length()), Gdx.graphics.getHeight() - 100);
-		// Current message is done showing
+		// Current message is done showing, poll the next message if there is
+		// one
 		if (mCounter >= (int) (3 / delta)) {
 			if (!messageQueue.isEmpty())
 				message = messageQueue.poll();
@@ -83,6 +87,7 @@ public class StoreScreen implements Screen {
 		}
 	}
 
+	// Add a message to the message queue
 	public void showMessage(String message) {
 		if (this.message != null)
 			messageQueue.add(message);
@@ -92,11 +97,10 @@ public class StoreScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
+	// Initialize all elements of the stage, fonts, and button styles. \
 	public void show() {
 		stage = new Stage();
 		atlas = new TextureAtlas("GravityData/ui/Button.pack");
@@ -114,13 +118,11 @@ public class StoreScreen implements Screen {
 		textButtonStyle.pressedOffsetX = 1;
 		textButtonStyle.pressedOffsetY = -1;
 		textButtonStyle.font = black;
-		
+
 		LabelStyle labelStyle = new LabelStyle(white, Color.WHITE);
 		heading = new Label("STORE\nMoney: $" + ship.getMoney(), labelStyle);
 		heading.setAlignment(Align.center);
 		heading.setFontScale(2f);
-
-		
 
 		resumeButton = new TextButton("Resume", textButtonStyle);
 
@@ -128,12 +130,14 @@ public class StoreScreen implements Screen {
 		resumeButton.addListener(new ClickListener() {
 
 			@Override
+			// Clicking this button resumes the game
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
 						.setScreen(resumeScreen);
 			}
 		});
 
+		// Add buttons for each item in the store
 		TextButton flameThrower = new TextButton("FlameThrower: $5000",
 				textButtonStyle);
 		flameThrower.pad(15, 15, 15, 15);
@@ -141,12 +145,15 @@ public class StoreScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				if (ship.getMoney() >= 5000) {
+				if (ship.getMoney() >= 5000
+						&& ship.getDefaultWeapon().getClass() != FlameThrower.class) {
 					ship.setDefaultWeapon(new FlameThrower());
 					ship.setWeapon(new FlameThrower());
 					ship.setMoney(ship.getMoney() - 5000);
 					showMessage("Flamethrower purchased!");
-				} else
+				} else if (ship.getDefaultWeapon().getClass() == FlameThrower.class)
+					showMessage("You already have a flamethrower!");
+				else
 					showMessage("Not enough money!");
 			}
 		});
@@ -157,12 +164,15 @@ public class StoreScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				if (ship.getMoney() >= 3000) {
+				if (ship.getMoney() >= 3000
+						&& ship.getDefaultWeapon().getClass() != Rifle.class) {
 					ship.setDefaultWeapon(new Rifle());
 					ship.setWeapon(new Rifle());
 					ship.setMoney(ship.getMoney() - 3000);
 					showMessage("Rifle purchased!");
-				} else
+				} else if (ship.getDefaultWeapon().getClass() == Rifle.class)
+					showMessage("You already have a rifle!");
+				else
 					showMessage("Not enough Money!");
 			}
 		});
@@ -173,16 +183,19 @@ public class StoreScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				if (ship.getMoney() >= 1000) {
+				if (ship.getMoney() >= 1000
+						&& ship.getDefaultWeapon().getClass() != Shotgun.class) {
 					ship.setDefaultWeapon(new Shotgun());
 					ship.setWeapon(new Shotgun());
 					ship.setMoney(ship.getMoney() - 1000);
 					showMessage("Shotgun purchased!");
-				} else
+				} else if (ship.getDefaultWeapon().getClass() == Shotgun.class)
+					showMessage("You already have a shotgun!");
+				else
 					showMessage("Not enough money!");
 			}
 		});
-		
+
 		TextButton speedUp = new TextButton("Speed Up: $10000", textButtonStyle);
 		speedUp.pad(15, 15, 15, 15);
 		speedUp.addListener(new ClickListener() {
@@ -197,12 +210,28 @@ public class StoreScreen implements Screen {
 					showMessage("Not enough money!");
 			}
 		});
+		
+		TextButton bomb = new TextButton("Bomb: $500", textButtonStyle);
+		bomb.pad(15, 15, 15, 15);
+		bomb.addListener(new ClickListener() {
+
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				if (ship.getMoney() >= 500) {
+					ship.addBomb();
+					ship.setMoney(ship.getMoney() - 500);
+					showMessage("Bomb purchased!");
+				} else
+					showMessage("Not enough money!");
+			}
+		});
 
 		table.add(heading).row();
 		table.add(flameThrower).spaceRight(15).spaceBottom(15);
 		table.add(rifle).spaceRight(15).row().spaceBottom(15);
 		table.add(shotgun).spaceRight(15);
 		table.add(speedUp).row();
+		table.add(bomb).spaceRight(15);
 		table.add(resumeButton).spaceBottom(15).spaceTop(15);
 		table.center();
 		table.debug();

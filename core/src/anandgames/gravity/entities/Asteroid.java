@@ -23,6 +23,7 @@ public class Asteroid extends Entity {
 		System.out.println(getVelocity());
 		setAcceleration(new Vector2(0, 0));
 		setRadius(60);
+		checkSpawn();
 	}
 
 	public void move() {

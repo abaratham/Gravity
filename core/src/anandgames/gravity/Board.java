@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import anandgames.gravity.entities.Asteroid;
+import anandgames.gravity.entities.Boss;
 import anandgames.gravity.entities.Bullet;
 import anandgames.gravity.entities.Enemy;
 import anandgames.gravity.entities.Entity;
 import anandgames.gravity.entities.Planet;
 import anandgames.gravity.entities.PlayerShip;
 import anandgames.gravity.entities.Tank;
-import anandgames.gravity.entities.pickups.Money;
-import anandgames.gravity.entities.pickups.WeaponPickup;
+import anandgames.gravity.entities.Pickup;
 import anandgames.gravity.screens.GameScreen;
 import anandgames.gravity.tweens.OrientationTweenAccessor;
 import anandgames.gravity.weapons.FlameThrower;
@@ -31,13 +31,12 @@ public class Board {
 	private int width = 8192;
 	private ArrayList<Planet> planets;
 	private int height = 8192;
-	private int counter = 0, currentPhase = 0, currentWave = 0;
+	private int counter = 0, currentWave = 0;
 	private boolean inGame = true;
-	private ArrayList<WeaponPickup> weaponList;
+	private ArrayList<Pickup> pickups;
 	private ArrayList<Asteroid> asteroids;
 	private TweenManager tManager;
 	private Vector2 fireLoc;
-	private ArrayList<Money> moneyList;
 
 	// TESTING TOOLS, DELETE WHEN DONE
 	public boolean collisions = true;
@@ -46,11 +45,10 @@ public class Board {
 		game = gs;
 		ship = new PlayerShip(this);
 		initEnemies();
-		weaponList = new ArrayList<WeaponPickup>();
+		pickups = new ArrayList<Pickup>();
 		initTweenManager();
 		initPlanets();
 		asteroids = new ArrayList<Asteroid>();
-		moneyList = new ArrayList<Money>();
 	}
 
 	// Set up the Tween Manager
@@ -62,10 +60,8 @@ public class Board {
 	// Initialize enemies
 	public void initEnemies() {
 		inGame = true;
-		currentPhase = 0;
-		currentWave = 0;
+		currentWave = 1;
 		enemies = new ArrayList<Enemy>();
-		// initPlanets();
 		newWave();
 	}
 
@@ -98,12 +94,7 @@ public class Board {
 	public boolean isOnPlanet() {
 		for (int i = 0; i < planets.size(); i++) {
 			Planet p = planets.get(i);
-			int dist = (int) Math
-					.sqrt((Math.pow(
-							ship.getPosition().x + ship.getRadius()
-									- p.getPosition().x, 2) + (Math.pow(
-							ship.getPosition().y + ship.getRadius()
-									- p.getPosition().y, 2))));
+			int dist = (int) ship.getDistanceTo(p);
 			if (dist < ship.getRadius() + p.getRadius())
 				return true;
 		}
@@ -113,15 +104,14 @@ public class Board {
 	// Generate a new wave of enemies
 	public void newWave() {
 		Random r = new Random();
+		if (currentWave % 5 == 0) {
+			enemies.add(new Boss(new Vector2(r.nextInt(getWidth()), r
+					.nextInt(getHeight())), this, currentWave));
+			return;
+		}
 		for (int i = 0; i < 5 * currentWave; i++) {
 			enemies.add(new Enemy(new Vector2(r.nextInt(getWidth()), r
 					.nextInt(getHeight())), this));
-		}
-		if (currentWave >= 5) {
-			for (int i = 0; i < currentWave; i++) {
-				enemies.add(new Tank(new Vector2(r.nextInt(getWidth()), r
-						.nextInt(getHeight())), this));
-			}
 		}
 	}
 
@@ -138,27 +128,31 @@ public class Board {
 
 	// Spawn a new random Weapon at a random location
 	public void spawnWeapon() {
-		WeaponPickup wep;
+		Pickup pkup;
 		float maxX = ship.getPosition().x + (Gdx.graphics.getWidth() / 2), minX = ship
 				.getPosition().x - (Gdx.graphics.getWidth() / 2), maxY = ship
 				.getPosition().y + (Gdx.graphics.getHeight() / 2), minY = ship
 				.getPosition().y - (Gdx.graphics.getHeight() / 2);
-		// TODO: use to weight weapon spawns
+		// use to weight weapon spawns
 		double prob = Math.random();
-		if (prob < .33)
-			wep = new WeaponPickup(new Vector2((float) (Math.random()
+		if (prob < .1)
+			pkup = new Pickup(new Vector2((float) (Math.random()
 					* (maxX - minX) + minX), (float) (Math.random()
-					* (maxY - minY) + minY)), WeaponPickup.FLAMETHROWER, this);
-		else if (prob < .67)
-			wep = new WeaponPickup(new Vector2((float) (Math.random()
+					* (maxY - minY) + minY)), Pickup.BOMB, this);
+		else if (prob < .2)
+			pkup = new Pickup(new Vector2((float) (Math.random()
 					* (maxX - minX) + minX), (float) (Math.random()
-					* (maxY - minY) + minY)), WeaponPickup.SHOTGUN, this);
+					* (maxY - minY) + minY)), Pickup.FLAMETHROWER, this);
+		else if (prob < .3)
+			pkup = new Pickup(new Vector2((float) (Math.random()
+					* (maxX - minX) + minX), (float) (Math.random()
+					* (maxY - minY) + minY)), Pickup.RIFLE, this);
 		else
-			wep = new WeaponPickup(new Vector2((float) (Math.random()
+			pkup = new Pickup(new Vector2((float) (Math.random()
 					* (maxX - minX) + minX), (float) (Math.random()
-					* (maxY - minY) + minY)), WeaponPickup.RIFLE, this);
-		Tween.to(wep, 0, 4.0f).target(360).repeat(-1, 0f).start(tManager);
-		weaponList.add(wep);
+					* (maxY - minY) + minY)), Pickup.SHOTGUN, this);
+		Tween.to(pkup, 0, 4.0f).target(360).repeat(-1, 0f).start(tManager);
+		pickups.add(pkup);
 
 	}
 
@@ -166,14 +160,16 @@ public class Board {
 	// collisions, and update enemies
 	// if needed
 	public void update() {
+		// Update tween manager
 		tManager.update(.032f);
 		double f = Math.random();
-		// TODO: pick the probability of a weapon spawn
 		if (f <= 0.05) {
 			spawnAsteroid();
 		}
-		if (f <= .001)
+		if (f <= .002)
 			spawnWeapon();
+
+		// Start a new wave if all enemies are dead
 		if (enemies.size() == 0) {
 			currentWave++;
 			newWave();
@@ -188,12 +184,11 @@ public class Board {
 		// Check if entities are affected by any planets
 		checkPlanetEffects();
 
-		// Move and re-orient all enemies
+		// Move and re-orient all enemies and enemy bullets
 		for (int i = 0; i < enemies.size(); i++) {
 			Enemy e = enemies.get(i);
-			if (e.isVisible()) {
-				e.move();
-			}
+			e.move();
+
 			if (e instanceof Tank) {
 				Tank t = (Tank) e;
 				for (int j = 0; j < t.getBullets().size(); j++)
@@ -221,13 +216,12 @@ public class Board {
 			asteroids.get(i).move();
 		}
 
-		// Move and re-orient the ship
+		// Move the ship
 		ship.move();
-		// ship.reOrient();
 
 		int limit = ship.getWeapon().getLimiter();
 
-		// Fire if the mouse is held
+		// Fire at a limited rate if the mouse is held
 		if (ship.isMouseHeld() && counter == limit) {
 			if (fireLoc == null)
 				ship.fire();
@@ -244,10 +238,6 @@ public class Board {
 			counter++;
 	}
 
-	public PlayerShip getShip() {
-		return ship;
-	}
-
 	// Return the current wave of enemies
 	public ArrayList<Enemy> getEnemies() {
 		return enemies;
@@ -257,43 +247,45 @@ public class Board {
 	public void checkCollisions() {
 		ArrayList<Bullet> bullets = ship.getBullets();
 
-		// Check player-weapon collisions
-		for (WeaponPickup w : weaponList) {
-			// Ship picked up the weapon
+		// Check player-pickup collisions
+		for (Pickup w : pickups) {
+			// Ship picked up the pickup
 			if (ship.collidesWith(w)) {
-				weaponList.remove(w);
+				pickups.remove(w);
 				String msg;
+				// Inform player of which weapon they picked up
 				switch (w.getId()) {
-				case WeaponPickup.FLAMETHROWER:
+				case Pickup.FLAMETHROWER:
 					ship.setWeapon(new FlameThrower());
 					msg = "flamethrower";
 					break;
-				case WeaponPickup.SHOTGUN:
+				case Pickup.SHOTGUN:
 					ship.setWeapon(new Shotgun());
 					msg = "shotgun";
 					break;
-				case WeaponPickup.RIFLE:
+				case Pickup.RIFLE:
 					ship.setWeapon(new Rifle());
 					msg = "rifle";
 					break;
+				case Pickup.MONEY:
+					int val = new Random().nextInt(99) + 1;
+					ship.addMoney(val);
+					msg = "$" + val;
+					break;
+				case Pickup.BOMB:
+					ship.addBomb();
+					msg = "a bomb";
+					break;
 				default:
 					msg = "lolbug";
+					break;
 				}
 				game.showMessage("Picked up " + msg);
 				break;
 			}
 		}
 
-		// Check player-money collisions
-		for (int i = 0; i < moneyList.size(); i++) {
-			Money m = moneyList.get(i);
-			if (ship.collidesWith(m)) {
-				ship.addMoney(m.getValue());
-				moneyList.remove(m);
-				game.showMessage("Picked up $" + m.getValue());
-			}
-		}
-
+		// Check all enemy collisions
 		for (int i = 0; i < enemies.size(); i++) {
 			// Check player-enemy collisions
 			Enemy e = enemies.get(i);
@@ -302,13 +294,14 @@ public class Board {
 				if (ship.isShielded())
 					ship.setShielded(false);
 				else {
-					ship.setVisible(false);
 					inGame = false;
 				}
 			}
 			// Check bullet-enemy collisions for each bullet
 			for (int j = 0; j < bullets.size(); j++) {
-				if ((bullets.get(j)).collidesWith(e)) {
+				Bullet b = bullets.get(j);
+				if (b.collidesWith(e)) {
+					// The bullet collided with a Tank that has hp > 0
 					if (e instanceof Tank && ((Tank) e).getHp() > 0) {
 						Tank t = (Tank) e;
 						t.setHp(t.getHp() - 1);
@@ -316,21 +309,27 @@ public class Board {
 						bullets.remove(j);
 						game.addExplosion((int) t.getPosition().x,
 								(int) t.getPosition().y);
-						t.setVelocity(new Vector2(0, 0));
+						t.getPosition().x -= 10 * Math.cos(t.getOrientation());
+						t.getPosition().y -= 10 * Math.sin(t.getOrientation());
 					} else {
-						e.setVisible(false);
-						bullets.get(j).setVisible(false);
+						// The enemy died
 						game.addExplosion((int) e.getPosition().x,
 								(int) e.getPosition().y);
 						game.getSound("Explosion").play(.7f);
 						bullets.remove(j);
 						ship.setScore(ship.getScore() + 10);
-						enemies.remove(i);
-						int val = new Random().nextInt(100);
-						moneyList.add(new Money(e.getPosition(), val, this));
+						enemies.remove(e);
+						pickups.add(new Pickup(e.getPosition(), Pickup.MONEY,
+								this));
+						if (e instanceof Boss) {
+							((Boss) e).spawnTanks();
+							ship.addBomb();
+							game.showMessage("Picked up a Bomb");
+						}
+						break;
 					}
-					if (enemies.size() == 0)
-						return;
+					// if (enemies.size() == 0)
+					// break;
 				}
 
 			}
@@ -338,7 +337,6 @@ public class Board {
 			// Check Asteroid collisions
 			for (int k = 0; k < asteroids.size(); k++) {
 				if (e.collidesWith(asteroids.get(k))) {
-					e.setVisible(false);
 					game.addExplosion((int) e.getPosition().x,
 							(int) e.getPosition().y);
 					game.getSound("Explosion").play(.7f);
@@ -348,7 +346,6 @@ public class Board {
 				}
 
 				if (ship.collidesWith(asteroids.get(k))) {
-					ship.setVisible(false);
 					inGame = false;
 				}
 
@@ -384,16 +381,16 @@ public class Board {
 		}
 	}
 
+	public PlayerShip getShip() {
+		return ship;
+	}
+
 	public boolean isInGame() {
 		return inGame;
 	}
 
 	public void setInGame(boolean inGame) {
 		this.inGame = inGame;
-	}
-
-	public int getWave() {
-		return currentPhase;
 	}
 
 	public int getWidth() {
@@ -412,12 +409,12 @@ public class Board {
 		this.height = height;
 	}
 
-	public ArrayList<WeaponPickup> getWeaponList() {
-		return weaponList;
+	public ArrayList<Pickup> getPickups() {
+		return pickups;
 	}
 
-	public void setWeaponList(ArrayList<WeaponPickup> weaponList) {
-		this.weaponList = weaponList;
+	public void setPickups(ArrayList<Pickup> weaponList) {
+		this.pickups = weaponList;
 	}
 
 	public TweenManager getTManager() {
@@ -436,11 +433,11 @@ public class Board {
 		this.fireLoc = fireLoc;
 	}
 
-	public ArrayList<Money> getMoneyList() {
-		return moneyList;
-	}
-
 	public ArrayList<Planet> getPlanets() {
 		return planets;
+	}
+
+	public int getCurrentWave() {
+		return currentWave;
 	}
 }

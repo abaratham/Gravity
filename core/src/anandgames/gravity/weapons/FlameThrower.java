@@ -6,6 +6,6 @@ public class FlameThrower extends Weapon {
 
 	public FlameThrower() {
 		super(new Vector2(0, 8), 150,
-				1, 14, 0, "GravityData/Sounds/Flame.wav");
+				1, 15, 0, "GravityData/Sounds/Flame.wav");
 	}
 }
