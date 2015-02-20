@@ -1,5 +1,9 @@
 Still in progress! (Kind of...)
 
+The planets' gravity will pull you in!
+Asteroids will kill you!
+Kill the green guys and don't let them touch you!
+
 Controls:
 WASD to move
 Mouse to aim
