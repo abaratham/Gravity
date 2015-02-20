@@ -25,5 +25,7 @@ Right Arrow: Speed Up
 Left Arrow: Speed Down
 Up Arrow: Money += 100000
 
+Download the JAR: http://www.filedropper.com/gravityv095
+
 
 BUILT USING LibGDX: http://libgdx.badlogicgames.com/
