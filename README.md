@@ -24,3 +24,6 @@ C: Toggle Collisions
 Right Arrow: Speed Up
 Left Arrow: Speed Down
 Up Arrow: Money += 100000
+
+
+BUILT USING LibGDX: http://libgdx.badlogicgames.com/
